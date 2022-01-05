@@ -1,0 +1,51 @@
+<form [formGroup]="custoFormGroup" autocomplete="off">
+    <h1 mat-dialog-title>
+        Adicionar Custo de Fatura Avulsa
+        <button type="button" mat-icon-button (click)="dialogRef.close()" style="float:right;">
+            <mat-icon>close</mat-icon>
+        </button>
+    </h1>
+    <mat-dialog-content>
+        <div fxLayout="row" fxLayout.lt-md="column">
+            <controles-busca-rapida #custos tipo="custos" fxFlex="75%" fxFlex.gt-sm="100%"></controles-busca-rapida>
+            <button mat-mini-fab type="button" color="accent" class="deep-purple-300-bg" (click)="novoCusto()" matTooltip="Adicionar custo">
+                <mat-icon>add</mat-icon>
+            </button>
+        </div>
+        <div fxLayout="row" fxLayoutGap="10px" fxLayout.lt-md="column">
+            <mat-form-field fxFlex="50%" fxFlex.gt-sm="100%">
+                <mat-label>R$ Custo</mat-label>
+                <input matInput formControlName="valorCusto" currencyMask
+                    [options]="{ prefix: 'R$', suffix: '', thousands: '.', decimal: ',', allowNegative: false, allowZero: true, nullable: false, align: 'right', precision: 2, inputMode: 1 }"
+                    required />
+            </mat-form-field>
+            <mat-form-field fxFlex="50%" fxFlex.gt-sm="100%">
+                <mat-label>Mês de cobrança</mat-label>
+                <input matInput [matDatepicker]="dp" [formControl]="date" required>
+                <mat-datepicker-toggle matSuffix [for]="dp"></mat-datepicker-toggle>
+                <mat-datepicker #dp startView="multi-year" (yearSelected)="chosenYearHandler($event)"
+                    (monthSelected)="chosenMonthHandler($event, dp)">
+                </mat-datepicker>
+            </mat-form-field>
+        </div>
+        <div fxLayout="column">
+            <mat-form-field class="textarea-full-width">
+                <mat-label>Observação</mat-label>
+                <textarea matInput #observacao formControlName="observacao" maxlength="100"
+                    placeholder="Digite a observação"></textarea>
+                <mat-hint align="end">{{observacao.value.length}} / 100</mat-hint>
+            </mat-form-field>
+        </div>
+    </mat-dialog-content>
+    <mat-card-actions fxLayoutAlign="end">
+        <button type="button" mat-raised-button class="grey-300-bg" (click)="dialogRef.close()">
+            <mat-icon>cancel</mat-icon>
+            Cancelar
+        </button>
+        <button type="button" mat-raised-button color="accent" class="green-bg" (click)="adicionarCustoFixo()"
+            [disabled]="custoFormGroup.invalid">
+            <mat-icon>check</mat-icon>
+            Adicionar Custo
+        </button>
+    </mat-card-actions>
+</form>

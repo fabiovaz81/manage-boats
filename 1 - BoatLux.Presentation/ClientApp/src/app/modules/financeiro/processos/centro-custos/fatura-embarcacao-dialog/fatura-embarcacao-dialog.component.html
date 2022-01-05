@@ -1,0 +1,621 @@
+<h1 mat-dialog-title>
+    {{descricaoEmbarcacao}}
+</h1>
+<mat-dialog-content>
+    <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="10px" fxLayoutGap.lt-md="0px">
+        <h2>{{cotas}} - {{totalEmbarcacao}} - Taxa de administração:</h2>
+        <mat-form-field>
+            <input matInput currencyMask placeholder="R$ Taxa de Administração" maxlength="7"
+                [options]="{ prefix: 'R$', suffix: '', thousands: '.', decimal: ',', allowNegative: false, allowZero: true, nullable: false, align: 'left', precision: 2, inputMode: 0 }"
+                [(ngModel)]="taxaAdministracao" [disabled]="!habilitaEdicaoTaxaAdministracao" />
+            <mat-hint align="start">Taxa min. {{maskMoney(resObterTaxaAdmModel?.taxaAdmMinima)}}</mat-hint>
+        </mat-form-field>
+        <button mat-mini-fab type="button" color="accent" class="deep-purple-300-bg"
+            *ngIf="!habilitaEdicaoTaxaAdministracao" (click)="habilitaEdicaoTaxaAdministracao = true"
+            matTooltip="Alterar taxa">
+            <mat-icon>edit_mode</mat-icon>
+        </button>
+        <button mat-mini-fab type="button" color="accent" class="green-300-bg" *ngIf="habilitaEdicaoTaxaAdministracao"
+            (click)="atualizarTaxaAdministracao()" matTooltip="Atualizar taxa">
+            <mat-icon>check</mat-icon>
+        </button>
+    </div>
+    <br />
+    <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="10px" fxLayoutGap.lt-md="0px">
+
+    </div>
+    <!-- TAB GROUP -->
+
+    <mat-tab-group [color]="'accent'" [backgroundColor]="'primary'">
+
+        <!-- DEMONSTRATIVOS -->
+        <!-- <mat-tab>
+                <ng-template mat-tab-label>
+                    <mat-icon class="mr-8">assignment</mat-icon>
+                    Demonstrativos
+                </ng-template>
+                <br />
+                <mat-card *ngIf="exibeLoadingDemonstrativo" class="mt-20"
+                    style="display: flex; justify-content: center; align-items: center">
+                    <div>
+                        <mat-progress-spinner color="primary" mode="indeterminate" diameter="50">
+                        </mat-progress-spinner>
+                    </div>
+                    <div style="padding-left: 15px;">
+                        <h2>
+                            Carregando demonstrativo das cotas...
+                        </h2>
+                    </div>
+                </mat-card>
+                <div *ngIf="!exibeLoadingDemonstrativo && !temDemonstrativo" class="alert alert-warning mt-20"
+                    role="alert">
+                    <mat-icon>warning</mat-icon>
+                    Não encontramos informações das cotas!
+                </div>
+                <div [hidden]="exibeLoadingDemonstrativo">
+                    <div class="table-scroller ">
+                        <table mat-table class="table table-medium table-striped table-hover table-pointer"
+                            [dataSource]="demonstrativoCustosDataSource" multiTemplateDataRows>
+                            <ng-container matColumnDef="cota">
+                                <th mat-header-cell *matHeaderCellDef>Cota</th>
+                                <td mat-cell *matCellDef="let item">{{item.nomeCota}}</td>
+                            </ng-container>
+                            <ng-container matColumnDef="total">
+                                <th mat-header-cell *matHeaderCellDef>R$ Total</th>
+                                <td mat-cell *matCellDef="let item">
+                                    <input matInput maxlength="15" currencyMask
+                                        [options]="{ prefix: 'R$ ', thousands: '.', decimal: ',', allowNegative: false, allowZero: true, nullable: false, align: 'left', precision: 2, inputMode: 1 }"
+                                        placeholder="" [(ngModel)]="item.totalCusto" readonly>
+                                </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="tabelaFilho">
+                                <th mat-header-cell *matHeaderCellDef [attr.colspan]="colunasCotas.length">Ações</th>
+                                <td mat-cell *matCellDef="let item;" [attr.colspan]="colunasCotas.length">
+                                    <div class="nestedMatTableWrapper">
+                                        <table class="table table-small table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th *ngFor="let coluna of colunasCotasCustos"
+                                                        [hidden]="!coluna.visivel">{{coluna.nome}}</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr *ngFor="let subItem of item.custos; let i= index">
+                                                    <td>{{subItem.descricaoCusto}}</td>
+                                                    <td>
+                                                        <input matInput maxlength="15" currencyMask
+                                                            [options]="{ prefix: 'R$ ', thousands: '.', decimal: ',', allowNegative: false, allowZero: true, nullable: false, align: 'left', precision: 2, inputMode: 1 }"
+                                                            placeholder="" [(ngModel)]="subItem.custo" readonly>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </td>
+                            </ng-container>
+
+                            <tr mat-header-row style="white-space: nowrap;" *matHeaderRowDef="colunasCotas;"></tr>
+                            <tr mat-row style="white-space: nowrap;" *matRowDef="let row; columns: colunasCotas"
+                                (click)="expandirCota(row)"></tr>
+                            <tr mat-row *matRowDef="let row; columns: ['tabelaFilho']"
+                                [hidden]="row.cotaId != tempIdCotaExpandida"
+                                style="background-color: #f8f8f8 !important; cursor: default !important;"></tr>
+
+
+                        </table>
+                    </div>
+                </div>
+
+            </mat-tab> -->
+        <!-- CUSTOS DA EMBARCACAO -->
+        <mat-tab>
+            <ng-template mat-tab-label>
+                <mat-icon class="mr-8">attach_money</mat-icon>
+                Custos da embarcação
+            </ng-template>
+
+            <br />
+
+            <!-- Filtros-->
+            <mat-card-content>
+                <mat-accordion>
+                    <mat-expansion-panel expanded>
+                        <mat-expansion-panel-header>
+                            <mat-panel-title>
+                                Filtros
+                            </mat-panel-title>
+                        </mat-expansion-panel-header>
+                        <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="10px" fxLayoutGap.lt-md="0px">
+                            <mat-form-field fxFlex="20%" fxFlex.gt-sm="100%">
+                                <mat-label>Mês referência</mat-label>
+                                <input matInput [matDatepicker]="dpReferenciaEmbarcacao"
+                                    [formControl]="dataReferenciaEmbarcacao">
+                                <mat-datepicker-toggle matSuffix [for]="dpReferenciaEmbarcacao"></mat-datepicker-toggle>
+                                <mat-datepicker #dpReferenciaEmbarcacao startView="multi-year"
+                                    (yearSelected)="chosenYearHandlerEmbarcacao($event)"
+                                    (monthSelected)="chosenMonthHandlerEmbarcacao($event, dpReferenciaEmbarcacao)">
+                                </mat-datepicker>
+                            </mat-form-field>
+                        </div>
+                    </mat-expansion-panel>
+                </mat-accordion>
+            </mat-card-content>
+
+            <!-- Botões -->
+            <div align="end" fxLayoutGap="10px">
+                <button mat-raised-button type="button" color="accent" class="green-400-bg" (click)="lancarCusto()"
+                    *ngIf="!dataFaturamentoEhRetroativa">
+                    Fazer lançamento
+                </button>
+                <button mat-raised-button type="button" color="accent" class="blue-400-bg"
+                    (click)="buscarCustosEmbarcacao()" [disabled]="dataReferenciaEmbarcacao.value == null">
+                    Buscar custos
+                </button>
+            </div>
+            <!-- Dados -->
+            <br />
+            <div>
+                <h3 mat-dialog-title class="subtitle">Custos fixos</h3>
+            </div>
+            <mat-card *ngIf="exibeLoadingCustoFixoEmbarcacao" class="mt-20"
+                style="display: flex; justify-content: center; align-items: center">
+                <div>
+                    <mat-progress-spinner color="primary" mode="indeterminate" diameter="50">
+                    </mat-progress-spinner>
+                </div>
+                <div style="padding-left: 15px;">
+                    <h2>
+                        Carregando custos fixos da embarcação...
+                    </h2>
+                </div>
+            </mat-card>
+            <div *ngIf="!exibeLoadingCustoFixoEmbarcacao && !temCustoFixoEmbarcacao" class="alert alert-warning mt-20"
+                role="alert">
+                <mat-icon>warning</mat-icon>
+                Nenhum custo fixo para esta embarcação. Clique em buscar custos para carregá-los!
+            </div>
+            <div [hidden]="exibeLoadingCustoFixoEmbarcacao || !temCustoFixoEmbarcacao">
+                <div class="table-scroller ">
+                    <table mat-table class="table table-medium table-striped table-hover table-pointer"
+                        [dataSource]="embarcacaoCustosFixosDataSource" multiTemplateDataRows>
+                        <ng-container matColumnDef="id">
+                            <th mat-header-cell *matHeaderCellDef>ID</th>
+                            <td mat-cell *matCellDef="let item">{{item.id}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="custo">
+                            <th mat-header-cell *matHeaderCellDef>Custo</th>
+                            <td mat-cell *matCellDef="let item">{{item.custoId}} - {{item.descricaoCusto}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="valor">
+                            <th mat-header-cell *matHeaderCellDef>R$ Custo</th>
+                            <td mat-cell *matCellDef="let item">
+                                <input matInput maxlength="6" currencyMask
+                                    [options]="{ prefix: 'R$ ', thousands: '.', decimal: ',', allowNegative: false, allowZero: true, nullable: false, align: 'left', precision: 2, inputMode: 1 }"
+                                    placeholder="" [(ngModel)]="item.valor" [ngModelOptions]="{standalone: true}"
+                                    readonly />
+                            </td>
+                        </ng-container>
+                        <ng-container matColumnDef="observacao">
+                            <th mat-header-cell *matHeaderCellDef>Observação</th>
+                            <td mat-cell *matCellDef="let item">{{item.observacao}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="acoes" stickyEnd>
+                            <th mat-header-cell *matHeaderCellDef style="text-align: right !important;">Ações</th>
+                            <td mat-cell *matCellDef="let item;" style="text-align: right;">
+                                <button type="button" mat-icon-button aria-label="Desabilitar"
+                                    (click)="desabilitarCusto(item.id, 1)" class="red-fg"
+                                    matTooltip="Desabilitar custo da embarcação">
+                                    <mat-icon>cancel</mat-icon>
+                                </button>
+                            </td>
+                        </ng-container>
+
+                        <tr mat-header-row style="white-space: nowrap;" *matHeaderRowDef="colunasEmbarcacaoCustoFixo;">
+                        </tr>
+                        <tr mat-row style="white-space: nowrap;"
+                            *matRowDef="let row; columns: colunasEmbarcacaoCustoFixo">
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <br />
+            <div>
+                <h3 mat-dialog-title class="subtitle">Custos variáveis</h3>
+            </div>
+            <mat-card *ngIf="exibeLoadingCustoVariavelEmbarcacao" class="mt-20"
+                style="display: flex; justify-content: center; align-items: center">
+                <div>
+                    <mat-progress-spinner color="primary" mode="indeterminate" diameter="50">
+                    </mat-progress-spinner>
+                </div>
+                <div style="padding-left: 15px;">
+                    <h2>
+                        Carregando custos variáveis da embarcação...
+                    </h2>
+                </div>
+            </mat-card>
+            <div *ngIf="!exibeLoadingCustoVariavelEmbarcacao && !temCustoVariavelEmbarcacao"
+                class="alert alert-warning mt-20" role="alert">
+                <mat-icon>warning</mat-icon>
+                Nenhum custo variável para esta embarcação. Clique em buscar custos para carregá-los! Você pode
+                visualizar faturas de outros meses alterando os Filtros.
+            </div>
+            <div [hidden]="exibeLoadingCustoVariavelEmbarcacao || !temCustoVariavelEmbarcacao">
+                <div class="table-scroller ">
+                    <table mat-table class="table table-medium table-striped table-hover table-pointer"
+                        [dataSource]="embarcacaoCustosVariaveisDataSource" multiTemplateDataRows>
+                        <ng-container matColumnDef="id">
+                            <th mat-header-cell *matHeaderCellDef>ID</th>
+                            <td mat-cell *matCellDef="let item">{{item.id}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="custo">
+                            <th mat-header-cell *matHeaderCellDef>Custo</th>
+                            <td mat-cell *matCellDef="let item">{{item.custoId}} - {{item.descricaoCusto}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="referenciaFatura">
+                            <th mat-header-cell *matHeaderCellDef>Mês referência</th>
+                            <td mat-cell *matCellDef="let item">{{item.referenciaFatura}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="parcelas">
+                            <th mat-header-cell *matHeaderCellDef>Parcelas</th>
+                            <td mat-cell *matCellDef="let item">{{item.parcelas}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="valor">
+                            <th mat-header-cell *matHeaderCellDef>R$ Custo</th>
+                            <td mat-cell *matCellDef="let item">
+                                <input matInput maxlength="6" currencyMask
+                                    [options]="{ prefix: 'R$ ', thousands: '.', decimal: ',', allowNegative: false, allowZero: true, nullable: false, align: 'left', precision: 2, inputMode: 1 }"
+                                    placeholder="" [(ngModel)]="item.valor" [ngModelOptions]="{standalone: true}"
+                                    readonly />
+                            </td>
+                        </ng-container>
+                        <ng-container matColumnDef="observacao">
+                            <th mat-header-cell *matHeaderCellDef>Observação</th>
+                            <td mat-cell *matCellDef="let item">{{item.observacao}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="acoes" stickyEnd>
+                            <th mat-header-cell *matHeaderCellDef style="text-align: right !important;">Ações</th>
+                            <td mat-cell *matCellDef="let item;" style="text-align: right;">
+                                <button type="button" mat-icon-button aria-label="Visualizar"
+                                    (click)="visualizarParcelas(item.id)" class="black-fg"
+                                    matTooltip="Visualizar parcelas">
+                                    <mat-icon>visibility</mat-icon>
+                                </button>
+                                <button type="button" mat-icon-button aria-label="Desabilitar"
+                                    (click)="desabilitarCusto(item.id, 2)" class="red-fg"
+                                    matTooltip="Desabilitar custo da embarcação">
+                                    <mat-icon>cancel</mat-icon>
+                                </button>
+                            </td>
+                        </ng-container>
+
+                        <tr mat-header-row style="white-space: nowrap;"
+                            *matHeaderRowDef="colunasEmbarcacaoCustoVariavel;"></tr>
+                        <tr mat-row style="white-space: nowrap;"
+                            *matRowDef="let row; columns: colunasEmbarcacaoCustoVariavel"></tr>
+                    </table>
+                </div>
+            </div>
+        </mat-tab>
+        <!-- CUSTOS DAS COTAS -->
+        <mat-tab>
+            <ng-template mat-tab-label>
+                <mat-icon class="mr-8">attach_money</mat-icon>
+                Custos das cotas
+            </ng-template>
+
+            <br />
+
+            <!-- Filtros-->
+            <mat-card-content>
+                <mat-accordion>
+                    <mat-expansion-panel expanded>
+                        <mat-expansion-panel-header>
+                            <mat-panel-title>
+                                Filtros
+                            </mat-panel-title>
+                        </mat-expansion-panel-header>
+                        <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="10px" fxLayoutGap.lt-md="0px">
+                            <mat-form-field fxFlex="20%" fxFlex.gt-sm="100%">
+                                <mat-label>Mês referência</mat-label>
+                                <input matInput [matDatepicker]="dpReferenciaCotas" [formControl]="dataReferenciaCotas">
+                                <mat-datepicker-toggle matSuffix [for]="dpReferenciaCotas"></mat-datepicker-toggle>
+                                <mat-datepicker #dpReferenciaCotas startView="multi-year"
+                                    (yearSelected)="chosenYearHandlerCotas($event)"
+                                    (monthSelected)="chosenMonthHandlerCotas($event, dpReferenciaCotas)">
+                                </mat-datepicker>
+                            </mat-form-field>
+                        </div>
+                    </mat-expansion-panel>
+                </mat-accordion>
+            </mat-card-content>
+
+            <!-- Botões -->
+            <div align="end" fxLayoutGap="10px">
+                <button mat-raised-button type="button" color="accent" class="green-400-bg" (click)="lancarCusto()"
+                    *ngIf="!dataFaturamentoEhRetroativa">
+                    Fazer lançamento
+                </button>
+                <button mat-raised-button type="button" color="accent" class="blue-400-bg" (click)="buscarCustosCotas()"
+                    [disabled]="dataReferenciaCotas.value == null">
+                    Buscar custos
+                </button>
+            </div>
+
+            <br />
+            <div>
+                <h3 mat-dialog-title class="subtitle">Custos fixos</h3>
+            </div>
+            <!-- Dados -->
+            <mat-card *ngIf="exibeLoadingCustoFixoCota" class="mt-20"
+                style="display: flex; justify-content: center; align-items: center">
+                <div>
+                    <mat-progress-spinner color="primary" mode="indeterminate" diameter="50">
+                    </mat-progress-spinner>
+                </div>
+                <div style="padding-left: 15px;">
+                    <h2>
+                        Carregando custos fixos das cotas...
+                    </h2>
+                </div>
+            </mat-card>
+            <div *ngIf="!exibeLoadingCustoFixoCota && !temCustoFixoCota" class="alert alert-warning mt-20" role="alert">
+                <mat-icon>warning</mat-icon>
+                Nenhum custo fixo para as cotas desta embarcação. Clique em buscar custos para carregá-los!
+            </div>
+            <div [hidden]="exibeLoadingCustoFixoCota || !temCustoFixoCota">
+                <div class="table-scroller ">
+                    <table mat-table class="table table-medium table-striped table-hover table-pointer"
+                        [dataSource]="cotaCustosFixosDataSource" multiTemplateDataRows>
+                        <ng-container matColumnDef="cota">
+                            <th mat-header-cell *matHeaderCellDef>Cota</th>
+                            <td mat-cell *matCellDef="let item">{{item.nomeCota}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="total">
+                            <th mat-header-cell *matHeaderCellDef>R$ Total</th>
+                            <td mat-cell *matCellDef="let item">
+                                <input matInput maxlength="15" currencyMask
+                                    [options]="{ prefix: 'R$ ', thousands: '.', decimal: ',', allowNegative: false, allowZero: true, nullable: false, align: 'left', precision: 2, inputMode: 1 }"
+                                    placeholder="" [(ngModel)]="item.total" readonly>
+                            </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="tabelaFilho">
+                            <th mat-header-cell *matHeaderCellDef [attr.colspan]="colunasCotas.length">Ações</th>
+                            <td mat-cell *matCellDef="let item;" [attr.colspan]="colunasCotas.length">
+                                <div class="nestedMatTableWrapper">
+                                    <table class="table table-small table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th *ngFor="let coluna of colunasCotasCustoFixo"
+                                                    [hidden]="!coluna.visivel">{{coluna.nome}}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngFor="let subItem of item.custos; let i= index">
+                                                <td>{{subItem.id}}</td>
+                                                <td>{{subItem.descricaoCusto}}</td>
+                                                <td>
+                                                    <input matInput maxlength="15" currencyMask
+                                                        [options]="{ prefix: 'R$ ', thousands: '.', decimal: ',', allowNegative: false, allowZero: true, nullable: false, align: 'left', precision: 2, inputMode: 1 }"
+                                                        placeholder="" [(ngModel)]="subItem.valor" readonly>
+                                                </td>
+                                                <td>
+                                                    <button type="button" mat-icon-button aria-label="Desabilitar"
+                                                        (click)="desabilitarCusto(subItem.id, 3, item.cotaId)" class="red-fg"
+                                                        matTooltip="Desabilitar custo da cota">
+                                                        <mat-icon>cancel</mat-icon>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                        </ng-container>
+
+                        <tr mat-header-row style="white-space: nowrap;" *matHeaderRowDef="colunasCotas;"></tr>
+                        <tr mat-row style="white-space: nowrap;" *matRowDef="let row; columns: colunasCotas"
+                            (click)="expandirCota(row)"></tr>
+                        <tr mat-row *matRowDef="let row; columns: ['tabelaFilho']"
+                            [hidden]="row.cotaId != tempIdCotaExpandida"
+                            style="background-color: #f8f8f8 !important; cursor: default !important;"></tr>
+
+
+                    </table>
+                </div>
+            </div>
+
+            <br />
+            <div>
+                <h3 mat-dialog-title class="subtitle">Custos variáveis</h3>
+            </div>
+            <mat-card *ngIf="exibeLoadingCustoVariavelCota" class="mt-20"
+                style="display: flex; justify-content: center; align-items: center">
+                <div>
+                    <mat-progress-spinner color="primary" mode="indeterminate" diameter="50">
+                    </mat-progress-spinner>
+                </div>
+                <div style="padding-left: 15px;">
+                    <h2>
+                        Carregando custos variáveis das cotas...
+                    </h2>
+                </div>
+            </mat-card>
+            <div *ngIf="!exibeLoadingCustoVariavelCota && !temCustoVariavelCota" class="alert alert-warning mt-20"
+                role="alert">
+                <mat-icon>warning</mat-icon>
+                Nenhum custo variável para as cotas desta embarcação. Clique em buscar custos para carregá-los!
+            </div>
+            <div [hidden]="exibeLoadingCustoVariavelCota || !temCustoVariavelCota">
+                <div class="table-scroller ">
+                    <table mat-table class="table table-medium table-striped table-hover table-pointer"
+                        [dataSource]="cotaCustosVariaveisDataSource" multiTemplateDataRows>
+                        <ng-container matColumnDef="cota">
+                            <th mat-header-cell *matHeaderCellDef>Cota</th>
+                            <td mat-cell *matCellDef="let item">{{item.nomeCota}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="total">
+                            <th mat-header-cell *matHeaderCellDef>R$ Total</th>
+                            <td mat-cell *matCellDef="let item">
+                                <input matInput maxlength="15" currencyMask
+                                    [options]="{ prefix: 'R$ ', thousands: '.', decimal: ',', allowNegative: false, allowZero: true, nullable: false, align: 'left', precision: 2, inputMode: 1 }"
+                                    placeholder="" [(ngModel)]="item.total" readonly>
+                            </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="tabelaFilho">
+                            <th mat-header-cell *matHeaderCellDef [attr.colspan]="colunasCotas.length">Ações</th>
+                            <td mat-cell *matCellDef="let item;" [attr.colspan]="colunasCotas.length">
+                                <div class="nestedMatTableWrapper">
+                                    <table class="table table-small table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th *ngFor="let coluna of colunasCotasCustoVariavel"
+                                                    [hidden]="!coluna.visivel">{{coluna.nome}}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngFor="let subItem of item.custos; let i= index">
+                                                <td>{{subItem.id}}</td>
+                                                <td>{{subItem.descricaoCusto}}</td>
+                                                <td>{{subItem.referenciaFatura}}</td>
+                                                <td>{{subItem.parcelas}}</td>
+                                                <td>
+                                                    <input matInput maxlength="15" currencyMask
+                                                        [options]="{ prefix: 'R$ ', thousands: '.', decimal: ',', allowNegative: false, allowZero: true, nullable: false, align: 'left', precision: 2, inputMode: 1 }"
+                                                        placeholder="" [(ngModel)]="subItem.valor" readonly>
+                                                </td>
+                                                <td>
+                                                    <button type="button" mat-icon-button aria-label="Visualizar"
+                                                        (click)="visualizarParcelas(subItem.id, item.cotaId)" class="black-fg"
+                                                        matTooltip="Visualizar parcelas">
+                                                        <mat-icon>visibility</mat-icon>
+                                                    </button>
+                                                    <button type="button" mat-icon-button aria-label="Desabilitar"
+                                                        (click)="desabilitarCusto(subItem.id, 4, item.cotaId)" class="red-fg"
+                                                        matTooltip="Desabilitar custo da cota">
+                                                        <mat-icon>cancel</mat-icon>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                        </ng-container>
+
+                        <tr mat-header-row style="white-space: nowrap;" *matHeaderRowDef="colunasCotas;"></tr>
+                        <tr mat-row style="white-space: nowrap;" *matRowDef="let row; columns: colunasCotas"
+                            (click)="expandirCota(row)"></tr>
+                        <tr mat-row *matRowDef="let row; columns: ['tabelaFilho']"
+                            [hidden]="row.cotaId != tempIdCotaExpandida"
+                            style="background-color: #f8f8f8 !important; cursor: default !important;"></tr>
+                    </table>
+                </div>
+            </div>
+        </mat-tab>
+        <!-- FATURAS AVULSAS -->
+        <mat-tab>
+            <ng-template mat-tab-label>
+                <mat-icon class="mr-8">monetization_on</mat-icon>
+                Faturas avulsas
+            </ng-template>
+            <br />
+            <!-- Filtros-->
+            <mat-card-content>
+                <mat-accordion>
+                    <mat-expansion-panel expanded>
+                        <mat-expansion-panel-header>
+                            <mat-panel-title>
+                                Filtros
+                            </mat-panel-title>
+                        </mat-expansion-panel-header>
+                        <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="10px" fxLayoutGap.lt-md="0px">
+                            <mat-form-field fxFlex="20%" fxFlex.gt-sm="100%">
+                                <mat-label>Mês das Faturas</mat-label>
+                                <input matInput [matDatepicker]="dpFaturaAvulsa" [formControl]="dataFaturaAvulsa">
+                                <mat-datepicker-toggle matSuffix [for]="dpFaturaAvulsa"></mat-datepicker-toggle>
+                                <mat-datepicker #dpFaturaAvulsa startView="multi-year"
+                                    (yearSelected)="chosenYearHandler($event)"
+                                    (monthSelected)="chosenMonthHandler($event, dpFaturaAvulsa)">
+                                </mat-datepicker>
+                            </mat-form-field>
+                        </div>
+                    </mat-expansion-panel>
+                </mat-accordion>
+            </mat-card-content>
+
+            <!-- Botões -->
+            <div align="end" fxLayoutGap="10px">
+                <button mat-raised-button type="button" color="accent" class="green-400-bg"
+                    (click)="adicionarFaturaAvulsa()">
+                    Nova fatura
+                </button>
+                <button mat-raised-button type="button" color="accent" class="blue-400-bg"
+                    (click)="buscarFaturasAvulsas()" [disabled]="dataFaturaAvulsa.value == null">
+                    Buscar faturas
+                </button>
+            </div>
+
+            <!-- Dados -->
+            <mat-card *ngIf="exibeLoadingFaturas" class="mt-20"
+                style="display: flex; justify-content: center; align-items: center">
+                <div>
+                    <mat-progress-spinner color="primary" mode="indeterminate" diameter="50">
+                    </mat-progress-spinner>
+                </div>
+                <div style="padding-left: 15px;">
+                    <h2>
+                        Carregando faturas avulsas...
+                    </h2>
+                </div>
+            </mat-card>
+            <div *ngIf="!exibeLoadingFaturas && !temFaturas" class="alert alert-warning mt-20" role="alert">
+                <mat-icon>warning</mat-icon>
+                Nenhuma fatura avulsa encontrada. Clique em buscar faturas para carregá-las! Você pode visualizar
+                faturas de outros meses alterando os Filtros.
+            </div>
+            <div [hidden]="exibeLoadingFaturas || !temFaturas">
+                <div class="table-scroller">
+                    <table mat-table class="table table-medium table-hover" [dataSource]="faturaAvulsaDataSource"
+                        multiTemplateDataRows>
+                        <ng-container matColumnDef="faturaId">
+                            <th mat-header-cell *matHeaderCellDef>ID</th>
+                            <td mat-cell *matCellDef="let item">{{item.faturaId}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="cotaFatura">
+                            <th mat-header-cell *matHeaderCellDef>Cota
+                            </th>
+                            <td mat-cell *matCellDef="let item">{{item.cotaId}} - {{item.nomeCota}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="dataVencimento">
+                            <th mat-header-cell *matHeaderCellDef>Data de vencimento</th>
+                            <td mat-cell *matCellDef="let item">{{item.dataVencimento}}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="valorFatura">
+                            <th mat-header-cell *matHeaderCellDef>R$ Fatura</th>
+                            <td mat-cell *matCellDef="let item">
+                                <input matInput maxlength="12" currencyMask
+                                    [options]="{ prefix: 'R$ ', thousands: '.', decimal: ',', allowNegative: false, allowZero: true, nullable: false, align: 'left', precision: 2, inputMode: 1 }"
+                                    placeholder="" [(ngModel)]="item.valorFatura" [ngModelOptions]="{standalone: true}"
+                                    readonly />
+                            </td>
+                        </ng-container>
+                        <tr mat-header-row style="white-space: nowrap;" *matHeaderRowDef="colunasFaturaAvulsa;">
+                        </tr>
+                        <tr mat-row style="white-space: nowrap;" *matRowDef="let row; columns: colunasFaturaAvulsa">
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+        </mat-tab>
+    </mat-tab-group>
+    <!-- / TAB GROUP -->
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button type="button" mat-raised-button class="grey-300-bg" (click)="fecharModal(false)">Fechar</button>
+</mat-dialog-actions>

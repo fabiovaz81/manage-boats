@@ -1,0 +1,307 @@
+<h1 mat-dialog-title>
+    Gerar fatura avulsa - {{embarcacao}}
+    <button type="button" mat-icon-button (click)="dialogRef.close()" style="float:right;">
+        <mat-icon>close</mat-icon>
+    </button>
+</h1>
+<mat-dialog-content>
+    <mat-horizontal-stepper linear #stepper>
+        <mat-step [stepControl]="step1">
+            <form [formGroup]="step1FormGroup" autocomplete="off">
+                <ng-template matStepLabel>Selecione o tipo da fatura</ng-template>
+                <br>
+
+                <div fxLayout="row" fxLayoutGap="10px" fxLayout.lt-md="column">
+                    <multi-select #multiselect tipo="cotas" multiSelect="true" fxFlex="50%" fxFlex.gt-sm="100%">
+                    </multi-select>
+
+                    <mat-form-field fxFlex="50%" fxFlex.gt-sm="100%">
+                        <mat-label>Tipo da fatura</mat-label>
+                        <mat-select formControlName="tipoFatura">
+                            <mat-option value="1">Mensal</mat-option>
+                            <mat-option value="2">Parcelada</mat-option>
+                            <mat-option value="3">Combustível</mat-option>
+                            <mat-option value="4">Diversas</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+                <mat-card-content>
+                    <div fxLayout="row" fxLayoutGap="10px" fxLayout.lt-md="column">
+                        <mat-checkbox class="example-margin" formControlName="proRata" fxFlex="50%" fxFlex.gt-sm="100%">
+                            Pró rata</mat-checkbox>
+
+                        <mat-form-field fxFlex="50%" fxFlex.gt-sm="100%" *ngIf="step1FormGroup.value.proRata">
+                            <mat-label>Data de início</mat-label>
+                            <input matInput formControlName="dataInicio" [matDatepicker]="picker">
+                            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                            <mat-datepicker #picker></mat-datepicker>
+                        </mat-form-field>
+                    </div>
+                    <br />
+                </mat-card-content>
+                <div fxLayoutAlign="center">
+                    <button mat-raised-button matStepperNext class="grey-bg mr-8" (click)="carregarStep2(stepper)">
+                        <mat-icon>arrow_forward</mat-icon>
+                        Próximo passo
+                    </button>
+                </div>
+            </form>
+        </mat-step>
+        <mat-step [stepControl]="step2">
+            <form [formGroup]="step2FormGroup" autocomplete="off">
+                <ng-template matStepLabel>Gerencie os custos</ng-template>
+                <mat-card-actions fxLayoutAlign="end">
+                    <button mat-raised-button color="accent" class="blue-400-bg" (click)="adicionarCusto()">
+                        <mat-icon>add</mat-icon>
+                        Adicionar custo
+                    </button>
+                </mat-card-actions>
+                <mat-card *ngIf="exibeLoading" class="mt-20"
+                    style="display: flex; justify-content: center; align-items: center">
+                    <div>
+                        <mat-progress-spinner color="primary" mode="indeterminate" diameter="50">
+                        </mat-progress-spinner>
+                    </div>
+                    <div style="padding-left: 15px;">
+                        <h2>
+                            Obtendo custos...
+                        </h2>
+                    </div>
+                </mat-card>
+                <div *ngIf="!exibeLoading && !temCustos && !temCustosCombustivel" class="alert alert-warning mt-20"
+                    role="alert">
+                    <mat-icon>warning</mat-icon>
+                    Não há custos para a fatura avulsa. Clique em 'Adicionar custo' para incluir!
+                </div>
+                <!-- Grid custos genérico -->
+                <div [hidden]="exibeLoading || !temCustos">
+                    <div class="table-scroller ">
+                        <table mat-table class="table table-medium table-striped table-hover table-pointer"
+                            [dataSource]="custosFaturaDataSource" matSort multiTemplateDataRows>
+
+                            <ng-container matColumnDef="id">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
+                                <td mat-cell *matCellDef="let item">{{item.id}}</td>
+                            </ng-container>
+                            <ng-container matColumnDef="receptorFatura">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>Cota</th>
+                                <td mat-cell *matCellDef="let item">{{item.receptorFatura}}</td>
+                            </ng-container>
+                            <ng-container matColumnDef="totalCusto">
+                                <th mat-header-cell *matHeaderCellDef>R$ Total</th>
+                                <td mat-cell *matCellDef="let item">
+                                    <input matInput maxlength="12" currencyMask
+                                        [options]="{ prefix: 'R$ ', thousands: '.', decimal: ',', allowNegative: false, allowZero: true, nullable: false, align: 'left', precision: 2, inputMode: 1 }"
+                                        placeholder="" [(ngModel)]="item.totalCusto"
+                                        [ngModelOptions]="{standalone: true}" readonly />
+                                </td>
+                            </ng-container>
+
+
+
+                            <!-- Pensar melhor essa ação, deve ser por item, tem que colocar no for
+                            <ng-container matColumnDef="acoes" stickyEnd>
+                                <th mat-header-cell *matHeaderCellDef style="text-align: right !important;">
+                                    Ações</th>
+                                <td mat-cell *matCellDef="let item;" style="text-align: right;">
+                                    <button type="button" mat-icon-button aria-label="Remover"
+                                        (click)="removerCusto(item)" class="red-fg" matTooltip="Remover custo">
+                                        <mat-icon>remove</mat-icon>
+                                    </button>
+                                </td>
+                            </ng-container> -->
+
+                            <ng-container matColumnDef="tabelaFilho">
+                                <th mat-header-cell *matHeaderCellDef [attr.colspan]="gridColumns.length">Ações</th>
+                                <td mat-cell *matCellDef="let item;" [attr.colspan]="gridColumns.length">
+                                    <div class="nestedMatTableWrapper">
+                                        <table class="table table-small table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th *ngFor="let coluna of colunasCustos" [hidden]="!coluna.visivel">
+                                                        {{coluna.nome}}</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr *ngFor="let subItem of item.custosFatura; let i= index">
+                                                    <td>{{subItem.custoId}}</td>
+                                                    <td>{{subItem.descricaoCusto}}</td>
+                                                    <td>
+                                                        <input matInput maxlength="15" currencyMask
+                                                            [options]="{ prefix: 'R$ ', thousands: '.', decimal: ',', allowNegative: false, allowZero: true, nullable: false, align: 'left', precision: 2, inputMode: 1 }"
+                                                            placeholder="" [(ngModel)]="subItem.valorCusto"
+                                                            [ngModelOptions]="{standalone: true}" readonly>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </td>
+                            </ng-container>
+
+                            <tr mat-header-row style="white-space: nowrap;" *matHeaderRowDef="gridColumns;">
+                            </tr>
+                            <tr mat-row style="white-space: nowrap;" *matRowDef="let row; columns: gridColumns"
+                                (click)="expandirCusto(row)">
+                            </tr>
+                            <tr mat-row *matRowDef="let row; columns: ['tabelaFilho']"
+                                [hidden]="row.id != tempIdCustoExpandido"
+                                style="background-color: #f8f8f8 !important; cursor: default !important;"></tr>
+
+                        </table>
+                        <mat-paginator [pageSizeOptions]="[10, 50]" showFirstLastButtons></mat-paginator>
+                    </div>
+                </div>
+                <!-- Grid custos de combustível -->
+                <div [hidden]="exibeLoading || !temCustosCombustivel">
+                    <div class="table-scroller ">
+                        <table mat-table class="table table-medium table-hover"
+                            [dataSource]="custosCombustivelDataSource" multiTemplateDataRows>
+                            <ng-container matColumnDef="combustivel">
+                                <th mat-header-cell *matHeaderCellDef>Combustível</th>
+                                <td mat-cell *matCellDef="let item">{{item.combustivel}}</td>
+                            </ng-container>
+                            <ng-container matColumnDef="prestador">
+                                <th mat-header-cell *matHeaderCellDef>Prestador</th>
+                                <td mat-cell *matCellDef="let item">{{item.prestador}}</td>
+                            </ng-container>
+                            <ng-container matColumnDef="dataAbastecimento">
+                                <th mat-header-cell *matHeaderCellDef>Data do abastecimento</th>
+                                <td mat-cell *matCellDef="let item">
+                                    {{_utilsService.formatarDataString(item.dataAbastecimento, 'DD/MM/YYYY') }}
+                                </td>
+                            </ng-container>
+                            <ng-container matColumnDef="dataUso">
+                                <th mat-header-cell *matHeaderCellDef>Data de uso</th>
+                                <td mat-cell *matCellDef="let item"> {{_utilsService.formatarDataString(item.dataUso,
+                                    'DD/MM/YYYY')}}
+                                </td>
+                            </ng-container>
+                            <ng-container matColumnDef="taxaAbastecimento">
+                                <th mat-header-cell *matHeaderCellDef>Taxa de abastecimento</th>
+                                <td mat-cell *matCellDef="let item">
+                                    <input matInput maxlength="6" currencyMask
+                                        [options]="{ prefix: 'R$ ', thousands: '.', decimal: ',', allowNegative: false, allowZero: true, nullable: false, align: 'left', precision: 2, inputMode: 1 }"
+                                        placeholder="" [(ngModel)]="item.taxaAbastecimento"
+                                        [ngModelOptions]="{standalone: true}" readonly />
+                                </td>
+                            </ng-container>
+                            <ng-container matColumnDef="litros">
+                                <th mat-header-cell *matHeaderCellDef>Litros</th>
+                                <td mat-cell *matCellDef="let item">
+                                    <input matInput maxlength="6" currencyMask
+                                        [options]="{ prefix:'', suffix: 'L', thousands: '.', decimal: ',', allowNegative: false, allowZero: true, nullable: false, align: 'left', precision: 2, inputMode: 1 }"
+                                        placeholder="" [(ngModel)]="item.litros" [ngModelOptions]="{standalone: true}"
+                                        readonly />
+                                </td>
+                            </ng-container>
+                            <ng-container matColumnDef="valor">
+                                <th mat-header-cell *matHeaderCellDef>R$ Custo</th>
+                                <td mat-cell *matCellDef="let item">
+                                    <input matInput maxlength="12" currencyMask
+                                        [options]="{ prefix: 'R$ ', thousands: '.', decimal: ',', allowNegative: false, allowZero: true, nullable: false, align: 'left', precision: 2, inputMode: 1 }"
+                                        placeholder="" [(ngModel)]="item.valor" [ngModelOptions]="{standalone: true}"
+                                        readonly />
+                                </td>
+                            </ng-container>
+
+                            <!-- <ng-container matColumnDef="acoes" stickyEnd>
+                                <th mat-header-cell *matHeaderCellDef style="text-align: right !important;">
+                                    Ações</th>
+                                <td mat-cell *matCellDef="let item;" style="text-align: right;">
+                                    <button type="button" mat-icon-button aria-label="Fatura"
+                                        (click)="gerarFatura(item.embarcacaoId)" class="green-fg"
+                                        matTooltip="Gerar fatura e enviar boleto" *ngIf="!dataFaturamentoEhRetroativa">
+                                        <mat-icon>money</mat-icon>
+                                    </button>
+                                    <button type="button" mat-icon-button aria-label="FaturaAvulsa"
+                                        (click)="gerarFaturaAvulsa(item)" class="blue-fg"
+                                        matTooltip="Gerar fatura avulsa" *ngIf="!dataFaturamentoEhRetroativa">
+                                        <mat-icon>monetization_on</mat-icon>
+                                    </button>
+                                    <button type="button" mat-icon-button aria-label="Visualizar"
+                                        (click)="visualizarEmbarcacao(item)" class="black-fg"
+                                        matTooltip="Visualizar embarcação">
+                                        <mat-icon>visibility</mat-icon>
+                                    </button>
+                                </td>
+                            </ng-container>  -->
+
+                            <tr mat-header-row style="white-space: nowrap;" *matHeaderRowDef="gridColumnsCombustivel;">
+                            </tr>
+                            <tr mat-row style="white-space: nowrap;"
+                                *matRowDef="let row; columns: gridColumnsCombustivel">
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <br>
+                <div fxLayoutAlign="center">
+                    <button mat-raised-button matStepperPrevious class="grey-bg mr-8">
+                        <mat-icon>arrow_back</mat-icon>
+                        Voltar
+                    </button>
+                    <button mat-raised-button matStepperNext class="grey-bg mr-8">
+                        <mat-icon>arrow_forward</mat-icon>
+                        Próximo passo
+                    </button>
+                </div>
+            </form>
+        </mat-step>
+        <mat-step [stepControl]="step3">
+            <form [formGroup]="step3FormGroup" autocomplete="off">
+                <ng-template matStepLabel>Finalize a fatura avulsa</ng-template>
+
+                <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="10px" fxLayoutGap.lt-md="0px">
+                    <mat-form-field fxFlex="50" fxFlex.gt-sm="100">
+                        <mat-label>Data de vencimento</mat-label>
+                        <input matInput formControlName="dataVencimento" [matDatepicker]="dpVencimento" required>
+                        <mat-datepicker-toggle matSuffix [for]="dpVencimento"></mat-datepicker-toggle>
+                        <mat-datepicker #dpVencimento></mat-datepicker>
+                    </mat-form-field>
+                    <mat-form-field fxFlex="50" fxFlex.gt-sm="100" *ngIf="ehFaturaParcelada">
+                        <mat-label>Quantidade de parcelas</mat-label>
+                        <input matInput formControlName="quantidadeParcelas" maxlength="3" currencyMask
+                            [options]="{ prefix: '', suffix: '', thousands: '.', decimal: ',', allowNegative: false, allowZero: false, nullable: false, align: 'left', precision: 0, inputMode: 1 }" />
+                    </mat-form-field>
+                    <!-- Taxa de administração -->
+                    <div *ngIf="verificarExibeTaxaAdministracao()" fxFlex="50" fxFlex.gt-sm="100">
+                        <mat-form-field>
+                            <input matInput currencyMask placeholder="Taxa de Administração" maxlength="7"
+                                [options]="{ prefix: 'R$', suffix: '', thousands: '.', decimal: ',', allowNegative: false, allowZero: true, nullable: false, align: 'left', precision: 2, inputMode: 0 }"
+                                formControlName="taxaAdministracao" [attr.disabled]="true" />
+                        </mat-form-field>
+                        <button mat-mini-fab type="button" color="accent" class="deep-purple-300-bg" 
+                            *ngIf="!habilitaEdicaoTaxaAdministracao" (click)="gerenciarEdicaoTaxaAdministracao(true)"
+                            matTooltip="Alterar taxa">
+                            <mat-icon>edit_mode</mat-icon>
+                        </button>
+                        <button mat-mini-fab type="button" color="accent" class="green-300-bg"
+                            *ngIf="habilitaEdicaoTaxaAdministracao" (click)="atualizarTaxaAdministracao()"
+                            matTooltip="Atualizar taxa">
+                            <mat-icon>check</mat-icon>
+                        </button>
+                    </div>
+                </div>
+
+                <div fxLayoutAlign="center">
+                    <button mat-raised-button matStepperPrevious class="grey-bg mr-8">
+                        <mat-icon>arrow_back</mat-icon>
+                        Voltar
+                    </button>
+                    <button type="button" mat-raised-button color="accent" class="green-bg"
+                        (click)="gerarFaturaAvulsa()" [disabled]="step3FormGroup.invalid">
+                        <mat-icon>check</mat-icon>
+                        Gerar fatura avulsa
+                    </button>
+                </div>
+            </form>
+        </mat-step>
+    </mat-horizontal-stepper>
+</mat-dialog-content>
+<mat-card-actions fxLayoutAlign="end">
+    <button type="button" mat-raised-button class="grey-300-bg" (click)="dialogRef.close()">
+        <mat-icon>cancel</mat-icon>
+        Cancelar
+    </button>
+</mat-card-actions>

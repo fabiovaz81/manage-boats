@@ -1,0 +1,148 @@
+<h1 mat-dialog-title>
+    {{tituloModal}}
+</h1>
+<mat-dialog-content>
+    <form fxLayout="column" [formGroup]="cadastroFormGroup" autocomplete="off">
+        <fieldset>
+            <legend>
+                Dados básicos
+            </legend>
+            <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="10px" fxLayoutGap.lt-md="0px">
+                <mat-form-field fxFlex="50%" fxFlex.gt-sm="100%">
+                    <mat-label>Razão social / Nome</mat-label>
+                    <input matInput formControlName="razao" maxlength="100" placeholder="Razão social ou nome" required>
+                </mat-form-field>
+                <mat-form-field fxFlex="50%" fxFlex.gt-sm="100%">
+                    <mat-label>Nome fantasia / Apelido</mat-label>
+                    <input matInput formControlName="fantasia" maxlength="100" placeholder="Nome fantasia ou apelido" required>
+                </mat-form-field>
+            </div>
+            <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="10px" fxLayoutGap.lt-md="0px">
+                <mat-form-field fxFlex="50%" fxFlex.gt-sm="100%">
+                    <mat-label>CNPJ/CPF</mat-label>
+                    <input matInput formControlName="cpfCnpj" mask="CPF_CNPJ" placeholder="CNPJ ou CPF" required>
+                </mat-form-field>
+                <mat-form-field fxFlex="50%" fxFlex.gt-sm="100%">
+                    <mat-label>I.E.</mat-label>
+                    <input matInput formControlName="ie" maxlength="12" placeholder="Inscrição Estadual">
+                </mat-form-field>
+            </div>
+            <div fxLayout="column">
+                <mat-checkbox formControlName="status">
+                    Ativo
+                </mat-checkbox>
+            </div>
+        </fieldset>
+
+        <br>
+
+        <fieldset>
+            <legend>
+                Endereço
+            </legend>
+            <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="10px" fxLayoutGap.lt-md="0px">
+                <mat-form-field fxFlex="30%" fxFlex.gt-sm="100%">
+                    <mat-label>CEP</mat-label>
+                    <input matInput formControlName="cep" mask="00000-000" maxlength="9" placeholder="Digite o cep"
+                        (blur)="buscarDadosCep()">
+                </mat-form-field>
+                <mat-form-field fxFlex="50%" fxFlex.gt-sm="100%">
+                    <mat-label>Logradouro</mat-label>
+                    <input matInput formControlName="logradouro" maxlength="150"
+                        placeholder="Logradouro ex.: Av. Brasil">
+                </mat-form-field>
+                <mat-form-field fxFlex="20%" fxFlex.gt-sm="100%">
+                    <mat-label>Número</mat-label>
+                    <input matInput formControlName="numero" maxlength="10" placeholder="Número">
+                </mat-form-field>
+            </div>
+            <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="10px" fxLayoutGap.lt-md="0px">
+                <mat-form-field fxFlex="30%" fxFlex.gt-sm="100%">
+                    <mat-label>Bairro</mat-label>
+                    <input matInput formControlName="bairro" maxlength="50" placeholder="Bairro">
+                </mat-form-field>
+                <mat-form-field fxFlex="30%" fxFlex.gt-sm="100%">
+                    <mat-label>Cidade</mat-label>
+                    <input matInput formControlName="cidade" maxlength="50" placeholder="Cidade">
+                </mat-form-field>
+                <mat-form-field fxFlex="20%" fxFlex.gt-sm="100%">
+                    <mat-label>Estado</mat-label>
+                    <input matInput formControlName="uf" maxlength="2" placeholder="Estado ex.: RJ">
+                </mat-form-field>
+                <mat-form-field fxFlex="20%" fxFlex.gt-sm="100%">
+                    <mat-label>Complemento</mat-label>
+                    <input matInput formControlName="complemento" maxlength="200"
+                        placeholder="Complemento ex.: Sala 10">
+                </mat-form-field>
+            </div>
+        </fieldset>
+        <br>
+
+        <fieldset>
+            <legend>
+                Dados do contato
+            </legend>
+            <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="10px" fxLayoutGap.lt-md="0px">
+                <mat-form-field fxFlex="50%" fxFlex.gt-sm="100%">
+                    <mat-label>Contato</mat-label>
+                    <input matInput formControlName="contato" maxlength="100" placeholder="Nome do contato">
+                </mat-form-field>
+                <mat-form-field fxFlex="50%" fxFlex.gt-sm="100%">
+                    <mat-label>Telefone</mat-label>
+                    <input matInput type="text" formControlName="telefone" placeholder="Telefone" mask="(00) 0000-0000" />
+                </mat-form-field>
+            </div>
+            <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="10px" fxLayoutGap.lt-md="0px">
+                <mat-form-field fxFlex="50%" fxFlex.gt-sm="100%">
+                    <mat-label>Celular</mat-label>
+                    <input matInput type="text" formControlName="celular" placeholder="Celular" mask="(00) 00000-0000" />
+                </mat-form-field>
+                <mat-form-field fxFlex="50%" fxFlex.gt-sm="100%">
+                    <mat-label>E-mail</mat-label>
+                    <input matInput type="email" formControlName="email" maxlength="100" placeholder="E-mail">
+                    <mat-error *ngIf="cadastroFormGroup.get('email').hasError('email')
+                                    && !cadastroFormGroup.get('email').hasError('required')">
+                        Digite um formato de e-mail válido.
+                    </mat-error>
+                </mat-form-field>
+            </div>
+        </fieldset>
+        <br>
+        <fieldset>
+            <legend>
+                Dados bancários
+            </legend>
+            <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="10px" fxLayoutGap.lt-md="0px">
+                <mat-form-field fxFlex="50%" fxFlex.gt-sm="100%">
+                    <mat-label>Banco</mat-label>
+                    <input matInput formControlName="banco" maxlength="8" placeholder="Banco">
+                </mat-form-field>
+                <mat-form-field fxFlex="50%" fxFlex.gt-sm="100%">
+                    <mat-label>Agência</mat-label>
+                    <input matInput formControlName="agencia" maxlength="15" placeholder="Agência">
+                </mat-form-field>
+                <mat-form-field fxFlex="50%" fxFlex.gt-sm="100%">
+                    <mat-label>Conta</mat-label>
+                    <input matInput formControlName="conta" maxlength="15" placeholder="Conta">
+                </mat-form-field>
+            </div>
+            <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="10px" fxLayoutGap.lt-md="0px">
+                <mat-form-field fxFlex="50%" fxFlex.gt-sm="100%">
+                    <mat-label>Tipo da chave Pix</mat-label>
+                    <input matInput formControlName="tipoPix" maxlength="15" placeholder="Tipo da chave Pix">
+                </mat-form-field>
+                <mat-form-field fxFlex="50%" fxFlex.gt-sm="100%">
+                    <mat-label>Chave Pix</mat-label>
+                    <input matInput formControlName="pix" maxlength="30" placeholder="pix">
+                </mat-form-field>
+            </div>
+        </fieldset>
+    </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button mat-button class="indigo-50-bg" (click)="fecharModal(false)">Fechar</button>
+    <button mat-raised-button color="accent" class="deep-purple-300-bg" (click)="salvarDados()"
+        [disabled]="cadastroFormGroup.invalid">
+        Salvar
+    </button>
+</mat-dialog-actions>

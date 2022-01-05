@@ -1,0 +1,130 @@
+<form [formGroup]="custoFormGroup" autocomplete="off">
+    <h1 mat-dialog-title>
+        Inserir custo - Embarcação/Cota
+        <button type="button" mat-icon-button (click)="dialogRef.close(false)" style="float:right;">
+            <mat-icon>close</mat-icon>
+        </button>
+    </h1>
+    <mat-dialog-content>
+        <div fxLayout="row" fxLayout.lt-md="column">
+            <fieldset fxFlex="50%" fxLayoutAlign="center center">
+                <legend>
+                    Tipo do custo
+                </legend>
+                <mat-radio-group formControlName="tipoCusto" (change)="tipoCustoChanged()" fxLayoutGap="20px"
+                    fxLayout="row" fxLayout.lt-md="column">
+                    <mat-radio-button value="1">Variável</mat-radio-button>
+                    <mat-radio-button value="2">Fixo</mat-radio-button>
+                </mat-radio-group>
+            </fieldset>
+
+            <fieldset fxFlex="50%" fxLayoutAlign="center center">
+                <legend>
+                    Operação
+                </legend>
+                <mat-radio-group formControlName="tipoOperacao" fxLayoutGap="20px" fxLayout="row"
+                    fxLayout.lt-md="column">
+                    <mat-radio-button value="1">Custo</mat-radio-button>
+                    <mat-radio-button value="2">Desconto</mat-radio-button>
+                </mat-radio-group>
+            </fieldset>
+        </div>
+        <br />
+
+        <div fxLayout="row" fxLayoutGap="10px" fxLayout.lt-md="column">
+            <mat-form-field fxFlex="75%" fxFlex.gt-sm="100%">
+                <mat-label>Descrição</mat-label>
+                <input matInput type="text" formControlName="descricao" maxlength="60" required>
+            </mat-form-field>
+            <mat-form-field fxFlex="25%" fxFlex.gt-sm="100%">
+                <mat-label>Valor</mat-label>
+                <input matInput formControlName="valor" currencyMask required
+                    [options]="{ prefix: 'R$', suffix: '', thousands: '.', decimal: ',', allowNegative: false, allowZero: true, nullable: false, align: 'left', precision: 2, inputMode: 1 }" />
+            </mat-form-field>
+        </div>
+        <div fxLayout="row" fxLayoutGap="10px" fxLayout.lt-md="column">
+            <controles-busca-rapida #custos tipo="custos" fxFlex="50%" fxFlex.gt-sm="100%"></controles-busca-rapida>
+            <button mat-mini-fab type="button" color="accent" class="deep-purple-300-bg" (click)="novoCusto()" matTooltip="Adicionar custo">
+                <mat-icon>add</mat-icon>
+            </button>
+            <controles-busca-rapida #prestadores tipo="prestadores" fxFlex="50%" fxFlex.gt-sm="100%">
+            </controles-busca-rapida>
+            <button mat-mini-fab type="button" color="accent" class="deep-purple-300-bg" (click)="novoPrestador()" matTooltip="Adicionar prestador">
+                <mat-icon>add</mat-icon>
+            </button>
+        </div>
+        <div fxLayout="row" fxLayoutGap="10px" fxLayout.lt-md="column" *ngIf="ehCustoVariavel">
+            <mat-form-field fxFlex="20%" fxFlex.gt-sm="100%">
+                <mat-label>Tipo da parcela</mat-label>
+                <mat-select formControlName="tipoValorParcela">
+                    <mat-option value="1">Valor da parcela</mat-option>
+                    <mat-option value="2">Valor total</mat-option>
+                </mat-select>
+            </mat-form-field>
+            <mat-form-field fxFlex="20%" fxFlex.gt-sm="100%">
+                <mat-label>Quantidade de parcelas</mat-label>
+                <input matInput formControlName="quantidadeParcelas" maxlength="3" currencyMask
+                    [options]="{ prefix: '', suffix: '', thousands: '.', decimal: ',', allowNegative: false, allowZero: false, nullable: false, align: 'left', precision: 0, inputMode: 1 }" />
+            </mat-form-field>
+            <mat-form-field fxFlex="20%" fxFlex.gt-sm="100%">
+                <mat-label>Mês inicial de faturamento</mat-label>
+                <input matInput [matDatepicker]="dp" [formControl]="date">
+                <mat-datepicker-toggle matSuffix [for]="dp"></mat-datepicker-toggle>
+                <mat-datepicker #dp startView="multi-year" (yearSelected)="chosenYearHandler($event)"
+                    (monthSelected)="chosenMonthHandler($event, dp)">
+                </mat-datepicker>
+            </mat-form-field>
+        </div>
+        <div fxLayout="row" fxLayoutGap="10px" fxLayout.lt-md="column">
+            <mat-form-field fxFlex="20%" fxFlex.gt-sm="100%">
+                <mat-label>Lançamento para</mat-label>
+                <mat-select formControlName="tipoLancamento" (selectionChange)="tipoLancamentoChanged()">
+                    <mat-option value="1">Embarcação</mat-option>
+                    <mat-option value="2">Cota</mat-option>
+                </mat-select>
+            </mat-form-field>
+            <multi-select #multiselect tipo="cotas" multiSelect="true" fxFlex="50%" fxFlex.gt-sm="100%" *ngIf="ehLancamentoParaCota"></multi-select>
+        </div>
+        <div fxLayout="column">
+            <mat-form-field class="textarea-full-width">
+                <mat-label>Observação</mat-label>
+                <textarea matInput #observacao formControlName="observacao" maxlength="100"
+                    placeholder="Digite a observação"></textarea>
+                <mat-hint align="end">{{observacao.value.length}} / 100</mat-hint>
+            </mat-form-field>
+        </div>
+        <div class="container" appDnd (fileDropped)="onFileDropped($event)">
+            <input type="file" #fileDropRef id="fileDropRef" multiple
+                (change)="fileBrowseHandler($event.target.files)" />
+            <img src="../../../assets/images/file/upload-file.png" alt="upload file">
+            <h4>Arraste e solte comprovantes aqui ou</h4>
+            <label for="fileDropRef">Clique para selecionar</label>
+        </div>
+        <div class="files-list">
+            <div class="single-file" *ngFor="let file of files; let i = index">
+                <img src="../../assets/icons/file.png" width="45px" alt="file">
+                <div class="info">
+                    <h4 class="name">
+                        {{ file?.name }}
+                    </h4>
+                    <p class="size">
+                        {{ formatBytes(file?.size) }}
+                    </p>
+                    <app-progress [progress]="file?.progress"></app-progress>
+                </div>
+                <img src="../../assets/icons/delete.png" class="delete" width="20px" alt="file" (click)="deleteFile(i)">
+            </div>
+        </div>
+    </mat-dialog-content>
+    <mat-card-actions fxLayoutAlign="end">
+        <button type="button" mat-raised-button class="grey-300-bg" (click)="dialogRef.close()">
+            <mat-icon>cancel</mat-icon>
+            Cancelar
+        </button>
+        <button type="button" mat-raised-button color="accent" class="green-bg" (click)="lancarCusto()"
+            [disabled]="custoFormGroup.invalid">
+            <mat-icon>check</mat-icon>
+            Lançar Custo
+        </button>
+    </mat-card-actions>
+</form>

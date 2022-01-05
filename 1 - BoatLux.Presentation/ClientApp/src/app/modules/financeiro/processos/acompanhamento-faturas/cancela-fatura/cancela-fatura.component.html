@@ -1,0 +1,28 @@
+<h1 mat-dialog-title>
+    {{titulo}}
+</h1>
+<mat-dialog-content>
+    <form fxLayout="column" [formGroup]="cancelaFaturaFormGroup" autocomplete="off">
+        <div fxLayout="column" fxLayoutGap="10px">
+            <mat-label>{{mensagemConfirmacao}}</mat-label>
+        </div>
+        <br>
+        <div fxLayout="column" fxLayoutGap="10px">
+            <mat-form-field fxFlex>
+                <input matInput formControlName="observacao" maxlength="100"
+                    placeholder="Observação" required>
+                    <mat-error>
+                        Campo obrigatório.
+                    </mat-error>
+            </mat-form-field>
+        </div>
+    </form>
+</mat-dialog-content>
+<br>
+<mat-dialog-actions align="end">
+    <button type="button" mat-raised-button color="accent" class="green-bg" (click)="fecharModal(false)">Não</button>
+    <button type="button" mat-raised-button color="accent" class="red-bg" (click)="cancelarFaturas()"
+        [disabled]="cancelaFaturaFormGroup.invalid">
+        Sim, cancelar
+    </button>
+</mat-dialog-actions>

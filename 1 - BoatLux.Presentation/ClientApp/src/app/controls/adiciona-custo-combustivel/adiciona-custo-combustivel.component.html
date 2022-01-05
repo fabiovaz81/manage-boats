@@ -1,0 +1,66 @@
+<h1 mat-dialog-title>
+    Adicionar custo de combustível
+</h1>
+<mat-dialog-content>
+    <form fxLayout="column" [formGroup]="cadastroFormGroup" autocomplete="off">
+        <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="10px" fxLayoutGap.lt-md="0px">
+            <mat-form-field fxFlex="50%" fxFlex.gt-sm="100%">
+                <mat-label>Valor</mat-label>
+                <input matInput formControlName="valor" maxlength="8" placeholder="Digite o valor total do combustível"
+                    currencyMask
+                    [options]="{ prefix: 'R$', suffix: '', thousands: '.', decimal: ',', allowNegative: false, allowZero: false, nullable: false, align: 'left', precision: 2, inputMode: 1 }"
+                    required>
+            </mat-form-field>
+            <mat-form-field fxFlex="50%" fxFlex.gt-sm="100%">
+                <mat-label>Litros</mat-label>
+                <input matInput formControlName="litros" maxlength="5" placeholder="Litros" currencyMask
+                    [options]="{ prefix: '', suffix: ' L', thousands: '.', decimal: ',', allowNegative: false, allowZero: false, nullable: false, align: 'left', precision: 2, inputMode: 0 }"
+                    required>
+            </mat-form-field>
+        </div>
+        <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="10px" fxLayoutGap.lt-md="0px">
+            <controles-busca-rapida #combustiveis tipo="combustiveis" fxFlex="50%" fxFlex.gt-sm="100%">
+            </controles-busca-rapida>
+            <mat-form-field fxFlex="50%" fxFlex.gt-sm="100%">
+                <mat-label>Taxa de abastecimento</mat-label>
+                <input matInput formControlName="taxaAbastecimento" maxlength="8" placeholder="Taxa de abastecimento"
+                    currencyMask
+                    [options]="{ prefix: 'R$', suffix: '', thousands: '.', decimal: ',', allowNegative: false, allowZero: false, nullable: false, align: 'left', precision: 2, inputMode: 1 }"
+                    required>
+            </mat-form-field>
+        </div>
+        <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="10px" fxLayoutGap.lt-md="0px">
+            <mat-form-field fxFlex="25%" fxFlex.gt-sm="100%">
+                <mat-label>Data de uso</mat-label>
+                <input matInput formControlName="dataUso" [matDatepicker]="dpUso" required>
+                <mat-datepicker-toggle matSuffix [for]="dpUso"></mat-datepicker-toggle>
+                <mat-datepicker #dpUso></mat-datepicker>
+            </mat-form-field>
+            <mat-form-field fxFlex="25%" fxFlex.gt-sm="100%">
+                <mat-label>Data de abastecimento</mat-label>
+                <input matInput formControlName="dataAbastecimento" [matDatepicker]="dpAbastecimento" required>
+                <mat-datepicker-toggle matSuffix [for]="dpAbastecimento"></mat-datepicker-toggle>
+                <mat-datepicker #dpAbastecimento></mat-datepicker>
+            </mat-form-field>
+        </div>
+        <div fxLayout="row" fxLayout.lt-md="column">
+            <controles-busca-rapida #prestadores tipo="prestadores" fxFlex="75%" fxFlex.gt-sm="100%">
+            </controles-busca-rapida>
+            <button mat-mini-fab type="button" color="accent" class="deep-purple-300-bg" (click)="novoPrestador()" matTooltip="Adicionar prestador">
+                <mat-icon>add</mat-icon>
+            </button>
+        </div>
+
+    </form>
+</mat-dialog-content>
+<mat-card-actions fxLayoutAlign="end">
+    <button type="button" mat-raised-button class="grey-300-bg" (click)="dialogRef.close()">
+        <mat-icon>cancel</mat-icon>
+        Cancelar
+    </button>
+    <button type="button" mat-raised-button color="accent" class="green-bg" (click)="adicionarCustoCombustivel()"
+        [disabled]="cadastroFormGroup.invalid">
+        <mat-icon>check</mat-icon>
+        Adicionar Custo
+    </button>
+</mat-card-actions>

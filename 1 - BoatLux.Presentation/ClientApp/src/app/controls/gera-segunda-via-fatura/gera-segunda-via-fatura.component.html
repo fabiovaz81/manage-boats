@@ -1,0 +1,37 @@
+<form [formGroup]="segundaViaFormGroup" autocomplete="off">
+    <h1 mat-dialog-title>
+        Gerar 2° via
+        <button type="button" mat-icon-button (click)="fecharJanela(false)" style="float:right;">
+            <mat-icon>close</mat-icon>
+        </button>
+    </h1>
+    <mat-dialog-content>
+        <div fxLayout="column" fxLayoutGap="10px">
+            <mat-form-field>
+                <mat-label>Data da segunda via</mat-label>
+                <input matInput formControlName="dataSegundaVia" [matDatepicker]="dp" required>
+                <mat-datepicker-toggle matSuffix [for]="dp"></mat-datepicker-toggle>
+                <mat-datepicker #dp></mat-datepicker>
+            </mat-form-field>
+
+            <mat-checkbox class="example-margin" formControlName="cobrarMulta" [disabled]="_utils.isOperadorFranquia()">
+                Cobrar multa
+            </mat-checkbox>
+            <mat-checkbox class="example-margin" formControlName="cobrarJuros" [disabled]="_utils.isOperadorFranquia()">
+                Cobrar juros
+            </mat-checkbox>
+        </div>
+        <br>
+    </mat-dialog-content>
+    <mat-card-actions fxLayoutAlign="end">
+        <button type="button" mat-raised-button class="grey-300-bg" (click)="fecharJanela(false)">
+            <mat-icon>cancel</mat-icon>
+            Cancelar
+        </button>
+        <button type="button" mat-raised-button color="accent" class="green-bg" (click)="gerarSegundaVia()"
+            [disabled]="segundaViaFormGroup.invalid">
+            <mat-icon>check</mat-icon>
+            Gerar 2° via
+        </button>
+    </mat-card-actions>
+</form>

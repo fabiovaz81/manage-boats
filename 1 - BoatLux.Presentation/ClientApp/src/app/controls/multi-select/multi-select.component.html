@@ -1,0 +1,28 @@
+<mat-form-field fxFlex>
+    <mat-label>{{label}}</mat-label>
+    <mat-select #matSelect [formControl]="selectFormControl" [multiple]="multiSelect" autoFocus
+        placeholder="{{placeholder}}" (selectionChange)="dispararEventoAlteracao()">
+        <a *ngIf="multiSelect" (click)="marcarDesmarcarTodas(matSelect);"
+            style="cursor: pointer; padding: 0px 16px; line-height: 40px; font-size: 9pt; color: black; font-weight: bold;">
+            <span *ngIf="marcarTodas">Marcar todas</span>
+            <span *ngIf="!marcarTodas">Desmarcar todas</span>
+        </a>
+        <mat-option *ngFor="let item of itensDataSource" value="{{item.id}}">{{item.id}} - {{item.name}}
+        </mat-option>
+        <mat-select-trigger>
+            <span *ngIf="selectFormControl.value?.length == 1">
+                {{selectFormControl.value[0]}}
+            </span>
+            <span *ngIf="selectFormControl.value?.length == 2">
+                {{selectFormControl.value[0]}} e {{ selectFormControl.value[1]}}
+            </span>
+            <span *ngIf="selectFormControl.value?.length == 3">
+                {{selectFormControl.value[0]}}, {{ selectFormControl.value[1]}} e {{selectFormControl.value[2]}}
+            </span>
+            <span *ngIf="selectFormControl.value?.length > 3">
+                {{selectFormControl.value[0]}} (+{{selectFormControl.value.length - 1}}
+                {{selectFormControl.value?.length === 2 ? 'selecionado' : 'selecionados'}})
+            </span>
+        </mat-select-trigger>
+    </mat-select>
+</mat-form-field>
